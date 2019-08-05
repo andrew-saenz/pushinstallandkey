@@ -1,0 +1,31 @@
+---
+- hosts: EBS-DEV
+  gather_facts: false
+
+  vars:
+      pubkey: lookup('file', '/home/ansible/.ssh/id_rsa.pub')
+
+  tasks:
+  - stat:
+      path: /root/.ssh
+    register: st
+  - name: create empty file
+    file:
+      path: "/root/.ssh/authorized_keys"
+      state: touch
+  - name: put pubkey
+    authorized_key:
+      user: root
+      state: present
+      key: "{{ lookup('file', '/home/ansible/.ssh/id_rsa.pub') }}"
+  - name: Create freshservice directory
+    file:
+      path: /tmp/freshservice
+      state: directory
+  - name: Copy fresh service diretory
+    copy:
+      src: /tmp/fs-linux-agent-2.0.0.tar/FS-Linux-Agent.py
+      dest: /tmp/freshservice/FS-Linux-Agent.py
+      owner: root
+      group: root
+      mode: '777'
